@@ -106,6 +106,7 @@ class AgentOS:
         settings: Optional[AgnoAPISettings] = None,
         lifespan: Optional[Any] = None,
         enable_mcp_server: bool = False,
+        force_stateless_mcp_server: bool = False,
         base_app: Optional[FastAPI] = None,
         on_route_conflict: Literal["preserve_agentos", "preserve_base_app", "error"] = "preserve_agentos",
         telemetry: bool = True,
@@ -133,6 +134,7 @@ class AgentOS:
             lifespan: Optional lifespan context manager for the FastAPI app
             enable_mcp_server: Whether to enable MCP (Model Context Protocol)
             base_app: Optional base FastAPI app to use for the AgentOS. All routes and middleware will be added to this app.
+            force_stateless_mcp_server: Whether to force the MCP server to be stateless.
             on_route_conflict: What to do when a route conflict is detected in case a custom base_app is provided.
             telemetry: Whether to enable telemetry
 
@@ -151,6 +153,7 @@ class AgentOS:
         self.settings: AgnoAPISettings = settings or AgnoAPISettings()
         self.auto_provision_dbs = auto_provision_dbs
         self._app_set = False
+        self.force_stateless_mcp_server = force_stateless_mcp_server
 
         if base_app:
             self.base_app: Optional[FastAPI] = base_app
@@ -405,6 +408,7 @@ class AgentOS:
                 self._mcp_app = get_mcp_server(self)
 
                 final_lifespan = self._mcp_app.lifespan  # type: ignore
+
                 if self.lifespan is not None:
                     # Wrap the user lifespan with agent_os parameter
                     wrapped_lifespan = self._add_agent_os_to_lifespan_function(self.lifespan)

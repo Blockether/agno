@@ -288,5 +288,8 @@ def get_mcp_server(
         else:
             db.delete_user_memory(memory_id=memory_id)
 
-    mcp_app = mcp.http_app(path="/mcp")
+    if os.force_stateless_mcp_server:
+        mcp_app = mcp.http_app(path="/mcp", stateless_http=True, transport="http", json_response=True)
+    else:
+        mcp_app = mcp.http_app(path="/mcp")
     return mcp_app
